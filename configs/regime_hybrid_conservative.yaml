@@ -1,0 +1,26 @@
+strategy: RegimeHybrid
+params:
+  text_mode: "tfidf"
+  lookback: 20
+  news_window: "30min"
+  price_features: ["returns", "zscore", "atr"]
+  clf: "logreg"
+  seed: 42
+  contracts: 1
+  session_start: "08:00"
+  session_end: "16:30"
+  tick_size: 0.25
+  tick_value: 0.5
+  risk_ticks: 150
+data:
+  prices_path: tests/data/mini_mnq_15m.csv
+  news_path: tests/data/sample_news.csv
+  timeframe: "15m"
+eval:
+  walkforward:
+    kind: "sliding"
+    train_bars: 200
+    test_bars: 50
+fees_bps: 1.0
+slippage_bps: 1.0
+seed: 42

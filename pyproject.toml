@@ -1,0 +1,69 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quantzoo"
+version = "0.1.0"
+description = "A Python trading strategy backtesting framework"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.8"
+authors = [
+    {name = "QuantZoo Team", email = "contact@quantzoo.com"},
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Office/Business :: Financial :: Investment",
+]
+dependencies = [
+    "pandas>=1.3.0",
+    "numpy>=1.20.0",
+    "pydantic>=1.8.0",
+    "typer>=0.6.0",
+    "matplotlib>=3.3.0",
+    "pyyaml>=5.4.0",
+    "scikit-learn>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov>=2.0",
+    "black>=21.0",
+    "isort>=5.0",
+    "flake8>=3.8",
+    "mypy>=0.910",
+]
+
+[project.scripts]
+qz = "quantzoo.cli.main:app"
+
+[project.urls]
+Homepage = "https://github.com/quantzoo/quantzoo"
+Repository = "https://github.com/quantzoo/quantzoo"
+Documentation = "https://quantzoo.readthedocs.io"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["quantzoo*"]
+
+[tool.black]
+line-length = 88
+target-version = ["py38"]
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true

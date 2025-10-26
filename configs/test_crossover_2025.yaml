@@ -1,0 +1,27 @@
+strategy: MNQ808
+params:
+  atr_mult: 1.5
+  lookback: 10
+  use_mfi: true
+  trail_mult_legacy: 1.0
+  contracts: 1
+  risk_ticks_legacy: 150
+  session_start: "08:00"
+  session_end: "16:30"
+  tick_size: 0.25
+  tick_value: 0.5
+  treat_atr_as_ticks: true
+data:
+  path: tests/data/mnq_15m_2025.csv
+  timeframe: "15m"
+  start_date: "2025-01-01"
+  end_date: null  # Defaults to today
+  timezone: "America/Toronto"
+eval:
+  walkforward:
+    kind: "sliding"
+    train_bars: 200   # Sufficient for 2025 data
+    test_bars: 50     # Testing window
+fees_bps: 1.0
+slippage_bps: 1.0
+seed: 42

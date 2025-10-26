@@ -1,0 +1,27 @@
+# Volatility Breakout Strategy Configuration
+#
+# ATR-based volatility breakout with stop loss and profit targets
+
+strategy:
+  type: "vol_breakout"
+  name: "vol_breakout_atr"
+
+params:
+  atr_period: 14          # ATR calculation period
+  breakout_multiplier: 2.0   # ATR multiplier for breakout threshold
+  stop_multiplier: 1.5       # ATR multiplier for stop loss
+  target_multiplier: 3.0     # ATR multiplier for profit target
+  min_atr: 5.0              # Minimum ATR to trade
+  max_atr: 100.0            # Maximum ATR to trade
+  contracts: 1
+  use_trend_filter: true    # Use trend filter
+  trend_period: 50          # Trend SMA period
+
+data:
+  file: "tests/data/mini_mnq_15m.csv"
+  symbol: "MNQ"
+
+backtest:
+  initial_cash: 100000
+  commission: 2.0           # Per contract commission
+  slippage: 0.25            # Quarter tick slippage

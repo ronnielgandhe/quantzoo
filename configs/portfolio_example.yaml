@@ -1,0 +1,34 @@
+# Portfolio Example Configuration
+#
+# This configuration defines a multi-strategy portfolio with equal weight allocation
+
+strategies:
+  - name: "mnq_808_conservative"
+    type: "mnq_808"
+    params:
+      lookback: 10
+      atr_mult: 1.5
+      use_mfi: true
+      contracts: 1
+  
+  - name: "regime_hybrid_tfidf"
+    type: "regime_hybrid"
+    params:
+      text_mode: "tfidf"
+      lookback: 20
+      news_window: "30min"
+      clf: "logreg"
+
+allocation:
+  type: "equal"  # equal, vol_target, risk_parity
+  rebalance_freq: "weekly"  # daily, weekly, monthly
+  min_weight: 0.1
+  max_weight: 0.9
+  transaction_cost: 0.0015  # 15bps transaction cost
+
+# Portfolio settings
+rebalance_freq: "weekly"
+transaction_cost: 0.0015
+min_weight: 0.1
+max_weight: 0.9
+start_cash: 100000.0

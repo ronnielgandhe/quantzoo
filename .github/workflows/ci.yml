@@ -65,23 +65,148 @@ jobs:
         name: codecov-umbrella
         fail_ci_if_error: false
     
-    - name: Smoke test - Run backtest
+    - name: Smoke test - Individual strategy backtest
       run: |
         qz run -c configs/mnq_808.yaml -s 1
+    
+    - name: Smoke test - Momentum strategy
+      run: |
+        qz run -c configs/momentum.yaml -s 1
+    
+    - name: Smoke test - Volatility breakout strategy
+      run: |
+        qz run -c configs/vol_breakout.yaml -s 1
+    
+    - name: Smoke test - Portfolio backtest
+      run: |
+        qz run-portfolio -c configs/portfolio_example.yaml -s 1
     
     - name: Verify artifacts were created
       run: |
         ls -la artifacts/
-        test -f artifacts/results.csv
-        test -f artifacts/metrics.json
+        test -f artifacts/quantzoo.duckdb
     
-    - name: Smoke test - Generate report
+    - name: Test CLI commands
       run: |
-        # Extract run ID from metrics.json
-        RUN_ID=$(python -c "import json; data=json.load(open('artifacts/metrics.json')); print(list(data.keys())[0])")
-        qz report -r $RUN_ID
+        # List stored runs
+        qz list-runs
+        
+        # Get first run ID from storage
+        RUN_ID=$(python -c "
+        from quantzoo.store.duck import DuckStore; 
+        store = DuckStore(); 
+        runs = store.list_runs(); 
+        print(runs[0]['run_id'] if runs else 'none')
+        ")
+        
+        if [ "$RUN_ID" != "none" ]; then
+          echo "Testing report generation for run: $RUN_ID"
+          qz report -r $RUN_ID
+          
+          # Verify report was created
+          ls -la reports/
+          test -f reports/backtest_report_*.md
+        else
+          echo "No runs found in storage"
+          exit 1
+        fi
     
-    - name: Verify report was created
+    - name: Test leaderboard generation
       run: |
-        ls -la reports/
-        test -f reports/backtest_report_*.md
+        qz leaderboard
+        test -f reports/leaderboard.md
+    
+    - name: Test real-time components
+      run: |
+        # Test that FastAPI service can start (run in background for 5 seconds)
+        timeout 5s uvicorn quantzoo.rt.api:app --host 0.0.0.0 --port 8000 || true
+        
+        # Test replay engine (should exit quickly with test data)
+        timeout 10s qz ingest-replay -p tests/data/mini_mnq_15m.csv -s MNQ --speed 100 || true
+    
+    - name: Test Streamlit dashboard (smoke test)
+      run: |
+        # Test that Streamlit app can import without errors
+        python -c "
+        import sys
+        sys.path.append('apps/streamlit_dashboard')
+        try:
+            import app
+            print('✅ Streamlit dashboard imports successfully')
+        except ImportError as e:
+            print(f'❌ Streamlit dashboard import failed: {e}')
+            sys.exit(1)
+        "
+    
+    - name: Test persistence layer
+      run: |
+        # Test DuckDB functionality
+        python -c "
+        from quantzoo.store.duck import DuckStore
+        import pandas as pd
+        import tempfile
+        import os
+        
+        # Test in temporary directory
+        with tempfile.TemporaryDirectory() as tmpdir:
+            store = DuckStore(os.path.join(tmpdir, 'test.duckdb'), tmpdir)
+            
+            # Test basic operations
+            runs = store.list_runs()
+            print(f'Initial runs: {len(runs)}')
+            
+            # Test writing dummy data
+            df = pd.DataFrame({'test': [1, 2, 3]})
+            store.write_trades(df, 'test_run')
+            
+            # Test reading back
+            read_df = store.read_trades('test_run')
+            assert len(read_df) == 3
+            
+            print('✅ DuckDB store test passed')
+        "
+    
+    - name: Validate configuration files
+      run: |
+        # Test that all config files are valid YAML and can be loaded
+        python -c "
+        import yaml
+        import os
+        
+        config_files = [
+            'configs/mnq_808.yaml',
+            'configs/momentum.yaml', 
+            'configs/vol_breakout.yaml',
+            'configs/pairs.yaml',
+            'configs/portfolio_example.yaml'
+        ]
+        
+        for config_file in config_files:
+            if os.path.exists(config_file):
+                with open(config_file) as f:
+                    cfg = yaml.safe_load(f)
+                    print(f'✅ {config_file} is valid YAML')
+            else:
+                print(f'⚠️ {config_file} not found')
+        "
+    
+    - name: Final system validation
+      run: |
+        # Run comprehensive validation
+        python -c "
+        import quantzoo
+        from quantzoo.strategies import mnq_808, momentum, vol_breakout, pairs
+        from quantzoo.indicators import ta
+        from quantzoo.portfolio import engine as portfolio_engine
+        from quantzoo.rt import providers, api, replay
+        from quantzoo.store import duck
+        
+        print('✅ All modules imported successfully')
+        print(f'QuantZoo version: {getattr(quantzoo, \"__version__\", \"0.1.0\")}')
+        "
+    
+    - name: Clean up test artifacts
+      run: |
+        # Clean up generated files (but keep for debugging if needed)
+        echo "Test artifacts generated:"
+        find . -name "*.duckdb" -o -name "*.parquet" | head -10

@@ -158,6 +158,52 @@ class StrategyContext:
                 self.engine.trail_stop = current_price - trail_points
             else:
                 self.engine.trail_stop = current_price + trail_points
+    
+    def current_position(self) -> Dict[str, Any]:
+        """Get current position information for API access.
+        
+        Returns:
+            Dictionary with side, qty, avg_price, entry_time
+        """
+        pos = self.engine.position
+        entry_time = None
+        
+        if self.engine.entry_bar is not None:
+            entry_time = self.engine.data.index[self.engine.entry_bar]
+        
+        if pos.is_flat():
+            side = "flat"
+        elif pos.is_long():
+            side = "long"
+        else:
+            side = "short"
+        
+        return {
+            "side": side,
+            "qty": abs(pos.size),
+            "avg_price": pos.avg_price,
+            "entry_time": entry_time
+        }
+    
+    def unrealized_pnl(self) -> Dict[str, float]:
+        """Get unrealized PnL information for API access.
+        
+        Returns:
+            Dictionary with dollars and percent
+        """
+        pos = self.engine.position
+        
+        if pos.is_flat():
+            return {"dollars": 0.0, "percent": 0.0}
+        
+        # Calculate percentage based on notional value
+        notional = abs(pos.size) * pos.avg_price
+        pnl_percent = (pos.unrealized_pnl / notional * 100) if notional > 0 else 0.0
+        
+        return {
+            "dollars": pos.unrealized_pnl,
+            "percent": pnl_percent
+        }
 
 
 @dataclass

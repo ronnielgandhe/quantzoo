@@ -1,14 +1,71 @@
 """Core performance metrics calculation."""
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import numpy as np
 import pandas as pd
 from quantzoo.backtest.engine import Trade
 
 
+def var_historic(returns: np.ndarray, alpha: float = 0.95) -> Optional[float]:
+    """
+    Calculate Historical Value-at-Risk with robust guards.
+    
+    Args:
+        returns: Array of returns
+        alpha: Confidence level (0.95 = 95% VaR)
+        
+    Returns:
+        VaR value or None if insufficient data
+    """
+    r = np.asarray(returns, dtype=float)
+    n = r.size
+    
+    # Robust guards
+    if n < 50 or not np.isfinite(r).all():
+        return None
+    
+    # Check for degenerate distribution
+    if np.std(r) == 0:
+        return None
+    
+    q = np.quantile(r, 1 - alpha)
+    return float(q)
+
+
+def es_historic(returns: np.ndarray, alpha: float = 0.95) -> Optional[float]:
+    """
+    Calculate Historical Expected Shortfall (Conditional VaR) with robust guards.
+    
+    Args:
+        returns: Array of returns
+        alpha: Confidence level (0.95 = 95% ES)
+        
+    Returns:
+        ES value or None if insufficient data
+    """
+    r = np.asarray(returns, dtype=float)
+    n = r.size
+    
+    # Robust guards
+    if n < 50 or not np.isfinite(r).all():
+        return None
+    
+    # Check for degenerate distribution
+    if np.std(r) == 0:
+        return None
+    
+    q = np.quantile(r, 1 - alpha)
+    tail = r[r <= q]
+    
+    if tail.size == 0:
+        return None
+    
+    return float(tail.mean())
+
+
 def calculate_metrics(trades: List[Trade], equity_curve: List[float]) -> Dict[str, Any]:
     """
-    Calculate comprehensive performance metrics.
+    Calculate comprehensive performance metrics including VaR and ES.
     
     Args:
         trades: List of completed trades
@@ -33,6 +90,8 @@ def calculate_metrics(trades: List[Trade], equity_curve: List[float]) -> Dict[st
             "largest_win": 0.0,
             "largest_loss": 0.0,
             "exposure": 0.0,
+            "var_95": "NA",
+            "es_95": "NA",
         }
     
     # Basic trade statistics
@@ -60,6 +119,10 @@ def calculate_metrics(trades: List[Trade], equity_curve: List[float]) -> Dict[st
     largest_win = max(pnls) if pnls else 0.0
     largest_loss = min(pnls) if pnls else 0.0
     
+    # Initialize risk metrics
+    var_95 = "NA"
+    es_95 = "NA"
+    
     # Equity curve metrics
     if equity_curve:
         initial_equity = equity_curve[0]
@@ -69,6 +132,15 @@ def calculate_metrics(trades: List[Trade], equity_curve: List[float]) -> Dict[st
         # Convert to returns
         returns = np.diff(equity_curve) / np.array(equity_curve[:-1])
         returns = returns[np.isfinite(returns)]  # Remove any inf/nan values
+        
+        # Calculate VaR and ES
+        var_result = var_historic(returns, alpha=0.95)
+        es_result = es_historic(returns, alpha=0.95)
+        
+        if var_result is not None:
+            var_95 = f"{var_result:.4f}"
+        if es_result is not None:
+            es_95 = f"{es_result:.4f}"
         
         # Sharpe ratio (annualized, assuming 252 trading days, 24 bars per day for 15min data)
         if len(returns) > 1:
@@ -124,6 +196,8 @@ def calculate_metrics(trades: List[Trade], equity_curve: List[float]) -> Dict[st
         "exposure": exposure,
         "gross_profit": gross_profit,
         "gross_loss": gross_loss,
+        "var_95": var_95,
+        "es_95": es_95,
     }
 
 

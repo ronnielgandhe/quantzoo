@@ -1,0 +1,25 @@
+# Pairs Trading Strategy Configuration
+#
+# Z-score mean reversion pairs trading strategy
+
+strategy:
+  type: "pairs"
+  name: "pairs_zscore"
+
+params:
+  lookback: 60              # Lookback for hedge ratio and z-score
+  zscore_entry: 2.0         # Z-score threshold for entry
+  zscore_exit: 0.5          # Z-score threshold for exit
+  max_holding_period: 20    # Maximum bars to hold position
+  contracts: 1
+  hedge_ratio_method: "simple"  # simple, ols, rolling
+  min_correlation: 0.7      # Minimum correlation to trade
+
+data:
+  file: "tests/data/mini_mnq_15m.csv"
+  symbol: "MNQ"
+
+backtest:
+  initial_cash: 100000
+  commission: 2.0           # Per contract commission
+  slippage: 0.25            # Quarter tick slippage

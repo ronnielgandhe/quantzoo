@@ -1,0 +1,24 @@
+# Momentum Strategy Configuration
+#
+# Time-series momentum strategy with trend filtering
+
+strategy:
+  type: "momentum"
+  name: "momentum_conservative"
+
+params:
+  lookback: 20           # Momentum lookback period (bars)
+  holding_period: 5      # Hold positions for N bars
+  min_momentum_threshold: 0.02  # 2% minimum momentum to trade
+  contracts: 1
+  use_sma_filter: true   # Use SMA trend filter
+  sma_period: 50        # SMA period for trend filter
+
+data:
+  file: "tests/data/mini_mnq_15m.csv"
+  symbol: "MNQ"
+
+backtest:
+  initial_cash: 100000
+  commission: 2.0       # Per contract commission
+  slippage: 0.25        # Quarter tick slippage

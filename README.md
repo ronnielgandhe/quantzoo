@@ -11,7 +11,7 @@ QuantZoo is a complete trading system framework designed for systematic strategy
 ### Production Features
 
 
-![QuantZoo — Open Trading Research Framework](reports/quantzoo_banner.png)
+![QuantZoo — Open Trading Research Framework](quantzoo/reports/quantzoo_banner.png)
 
 <div align="center">
 

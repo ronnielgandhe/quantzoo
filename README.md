@@ -10,24 +10,22 @@ QuantZoo is a complete trading system framework designed for systematic strategy
 
 ### Production Features
 
-<!-- Banner -->
-<p align="center">
-  <img src="https://raw.githubusercontent.com/ronnielgandhe/quantzoo/main/reports/quantzoo_banner.png" alt="QuantZoo — Open Trading Research Framework"/>
-</p>
 
-<p align="center">
-  <b>QuantZoo: Modular Trading Strategy Framework</b><br>
-  <i>Open-source backtesting, walk-forward validation, and real-time dashboards for systematic strategies.</i>
-</p>
+![QuantZoo — Open Trading Research Framework](reports/quantzoo_banner.png)
 
-<!-- Badges -->
-<p align="center">
-  <a href="https://github.com/ronnielgandhe/quantzoo/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/ronnielgandhe/quantzoo/ci.yml?branch=main&label=CI"/></a>
-  <a href="https://www.python.org/downloads/release/python-3110/"><img src="https://img.shields.io/badge/python-3.11-blue.svg"/></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/ronnielgandhe/quantzoo"/></a>
-  <a href="https://github.com/ronnielgandhe/quantzoo"><img src="https://img.shields.io/badge/build-passing-brightgreen"/></a>
-  <a href="https://share.streamlit.io/ronnielgandhe/quantzoo/apps/streamlit_dashboard/app.py"><img src="https://img.shields.io/badge/Open%20in-Streamlit-ff4b4b?logo=streamlit"/></a>
-</p>
+<div align="center">
+
+**QuantZoo: Modular Trading Strategy Framework**
+
+_Open-source backtesting, walk-forward validation, and real-time dashboards for systematic strategies._
+
+[![CI](https://img.shields.io/github/actions/workflow/status/ronnielgandhe/quantzoo/ci.yml?branch=main&label=CI)](https://github.com/ronnielgandhe/quantzoo/actions/workflows/ci.yml)
+[![python](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
+[![license](https://img.shields.io/github/license/ronnielgandhe/quantzoo)](LICENSE)
+[![build](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/ronnielgandhe/quantzoo)
+[![Open in Streamlit](https://img.shields.io/badge/Open%20in-Streamlit-ff4b4b?logo=streamlit)](https://share.streamlit.io/ronnielgandhe/quantzoo/apps/streamlit_dashboard/app.py)
+
+</div>
 
 ---
 

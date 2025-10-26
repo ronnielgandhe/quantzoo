@@ -169,16 +169,20 @@ async def stream_bars(
                 speed_factor=speed
             )
             
+            # Use CME:MNQ1! for Polygon MNQ subscriptions
+            sub_symbol = symbol
+            if provider == "polygon" and symbol.upper() == "MNQ":
+                sub_symbol = "CME:MNQ1!"
             # Stream bars
             if hasattr(data_provider, 'iter_bars'):
-                async for bar in data_provider.iter_bars([symbol]):
+                async for bar in data_provider.iter_bars([sub_symbol]):
                     yield {
                         "event": "bar",
                         "data": json.dumps(bar)
                     }
             else:
                 # Fallback for sync providers
-                data_provider.subscribe([symbol])
+                data_provider.subscribe([sub_symbol])
                 while True:
                     bar = data_provider.next_bar()
                     if bar is None:

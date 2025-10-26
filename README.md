@@ -7,20 +7,127 @@ A production-grade Python trading framework with backtesting, real-time streamin
 QuantZoo is a complete trading system framework designed for systematic strategy development, backtesting, and deployment. It features:
 
 ### Core Engine
-- **Modular Strategy System**: Easy-to-implement strategy interface with Pine Script compatibility
-- **Realistic Execution**: Configurable fees, slippage, and market impact modeling
-- **Walk-Forward Analysis**: Sliding and expanding window validation with purged K-fold cross-validation
-- **No Look-Ahead Bias**: Comprehensive testing to prevent future data leakage
-- **Deterministic Results**: Reproducible backtests with seed-based randomization
 
 ### Production Features
-- **Real-Time Data Streaming**: FastAPI-based streaming service with multiple provider support
-- **Portfolio Backtesting**: Multi-strategy portfolio allocation with rebalancing algorithms
-- **Advanced Risk Metrics**: Historical VaR, Expected Shortfall, and comprehensive analytics
-- **Persistent Storage**: DuckDB-based storage with Parquet files for large-scale analysis
-- **Web Dashboard**: Interactive Streamlit dashboard with real-time charts and monitoring
-- **Enhanced CLI**: Complete command-line interface for all operations
 
+<!-- Banner -->
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ronnielgandhe/quantzoo/main/reports/quantzoo_banner.png" alt="QuantZoo — Open Trading Research Framework"/>
+</p>
+
+<p align="center">
+  <b>QuantZoo: Modular Trading Strategy Framework</b><br>
+  <i>Open-source backtesting, walk-forward validation, and real-time dashboards for systematic strategies.</i>
+</p>
+
+<!-- Badges -->
+<p align="center">
+  <a href="https://github.com/ronnielgandhe/quantzoo/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/ronnielgandhe/quantzoo/ci.yml?branch=main&label=CI"/></a>
+  <a href="https://www.python.org/downloads/release/python-3110/"><img src="https://img.shields.io/badge/python-3.11-blue.svg"/></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/ronnielgandhe/quantzoo"/></a>
+  <a href="https://github.com/ronnielgandhe/quantzoo"><img src="https://img.shields.io/badge/build-passing-brightgreen"/></a>
+  <a href="https://share.streamlit.io/ronnielgandhe/quantzoo/apps/streamlit_dashboard/app.py"><img src="https://img.shields.io/badge/Open%20in-Streamlit-ff4b4b?logo=streamlit"/></a>
+</p>
+
+---
+
+## Features
+- Event-driven backtester with realistic fees/slippage
+- PineScript-compatible strategy API
+- Walk-forward & purged K-fold validation
+- Real-time FastAPI backend + Streamlit dashboard
+- Comprehensive metrics (Sharpe, Drawdown, Profit Factor, Win Rate)
+- Reproducible YAML configs
+
+---
+
+## Latest Results (2025)
+
+**MNQ_808 (15m, 2025 Backtest)**
+- Sharpe Ratio: 2.81  
+- Max Drawdown: 9.37%  
+- Win Rate: 51.6%  
+- Total Return: 29.1% (Jan–Oct 2025)
+- Commission: $0.32/side, Slippage: 0.5 tick
+
+<p align="center">
+  <img src="reports/backtest_report_8195c4e6_20251025_174849.png" alt="MNQ_808 Backtest Results" width="700"/>
+</p>
+
+---
+
+## Quickstart
+```bash
+git clone https://github.com/ronnielgandhe/quantzoo.git
+cd quantzoo
+pip install -e .
+qz run -c configs/mnq_808.yaml -s 42
+qz report -r <run_id>
+streamlit run apps/streamlit_dashboard/app.py
+```
+
+---
+
+## Architecture
+```
+quantzoo/
+├── backtest/     # core engine  
+├── strategies/   # MNQ_808, others  
+├── eval/         # walk-forward validation  
+├── metrics/      # Sharpe, drawdown, winrate  
+├── reports/      # markdown + plots  
+├── cli/          # qz command interface  
+└── apps/         # Streamlit + FastAPI dashboards
+```
+
+---
+
+## Reproduce the 2025 MNQ 808 Run
+
+- Config: `configs/mnq_808.yaml`
+- Data: `tests/data/mnq_15m_2025.csv`
+- Seed: `42`
+- Command:
+  ```bash
+  qz run -c configs/mnq_808.yaml -s 42
+  qz report -r <run_id>
+  ```
+- Dashboard:
+  ```bash
+  streamlit run apps/streamlit_dashboard/app.py
+  ```
+
+---
+
+## Contributing
+- Fork and branch from `main`
+- Write clear docstrings and type hints
+- Format code with `black`, `isort`, and check types with `mypy`
+- Run tests with `pytest tests/`
+- Add new strategies via YAML configs and documentation
+- See [CONTRIBUTING.md](CONTRIBUTING.md) for details
+
+---
+
+## License
+MIT — see [LICENSE](LICENSE)
+
+---
+
+## About
+QuantZoo is built by Ronniel Gandhe. See [quantzoo.tech](https://quantzoo.tech) and [Résumé](https://ronnielgandhe.com) for more.
+
+---
+
+## Repo Topics
+`quant` `trading` `backtesting` `pytorch` `streamlit` `fastapi` `LLM`
+
+---
+
+## Banner
+<p align="center">
+  <img src="reports/quantzoo_banner.png" alt="QuantZoo — Open Trading Research Framework" width="700"/>
+</p>
 ## Quickstart
 
 ### Installation

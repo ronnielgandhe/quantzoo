@@ -313,34 +313,60 @@ async def run_backtest(request: Dict[str, Any]) -> Dict[str, Any]:
         initial_balance = request.get("initial_balance", 100000)
         commission = request.get("commission", 2.0)
         slippage = request.get("slippage", 0.25)
+        timeframe = request.get("timeframe", "15m")  # New parameter
+        contracts = request.get("contracts", 1)      # New parameter
         
         # Generate synthetic data for backtesting (in production, this would load real data)
         import pandas as pd
         import numpy as np
         from datetime import datetime, timedelta
         
-        # Create date range
+        # Create date range based on timeframe
         start_dt = datetime.fromisoformat(start_date)
         end_dt = datetime.fromisoformat(end_date)
         
-        # Generate 15-minute bars between dates
-        date_range = pd.date_range(start=start_dt, end=end_dt, freq='15min')
-        
-        # Generate realistic price data
-        np.random.seed(42)  # For reproducible results
-        
-        base_prices = {
-            "MNQ": 4200,
-            "ES": 4600,
-            "NQ": 16800, 
-            "YM": 36000,
-            "RTY": 2100
+        # Map timeframe to pandas frequency
+        timeframe_map = {
+            "1m": "1min",
+            "5m": "5min", 
+            "15m": "15min",
+            "1h": "1H",
+            "4h": "4H",
+            "1d": "1D"
         }
         
-        base_price = base_prices.get(symbol, 4200)
+        freq = timeframe_map.get(timeframe, "15min")
+        date_range = pd.date_range(start=start_dt, end=end_dt, freq=freq)
         
-        # Generate price series with some trend and volatility
-        returns = np.random.normal(0.0001, 0.008, len(date_range))  # Small positive drift
+        # Generate realistic price data based on current market levels
+        np.random.seed(42)  # For reproducible results
+        
+        # Updated realistic base prices (as of October 2025)
+        base_prices = {
+            "MNQ": 21200,    # Micro E-mini NASDAQ-100 (1/10th of NQ)
+            "ES": 5800,      # E-mini S&P 500  
+            "NQ": 21200,     # E-mini NASDAQ-100
+            "YM": 43500,     # E-mini Dow Jones
+            "RTY": 2350      # E-mini Russell 2000
+        }
+        
+        base_price = base_prices.get(symbol, 21200)
+        
+        # Generate price series with realistic volatility for each symbol
+        volatility_map = {
+            "MNQ": 0.015,    # 1.5% daily volatility
+            "ES": 0.012,     # 1.2% daily volatility
+            "NQ": 0.015,     # 1.5% daily volatility  
+            "YM": 0.010,     # 1.0% daily volatility
+            "RTY": 0.018     # 1.8% daily volatility (small caps more volatile)
+        }
+        
+        daily_vol = volatility_map.get(symbol, 0.015)
+        # Convert to 15-minute volatility (96 bars per day)
+        bar_vol = daily_vol / np.sqrt(96)
+        
+        # Generate returns with slight positive drift
+        returns = np.random.normal(0.00005, bar_vol, len(date_range))  # Small positive drift
         prices = [base_price]
         
         for r in returns[1:]:
@@ -372,10 +398,23 @@ async def run_backtest(request: Dict[str, Any]) -> Dict[str, Any]:
         cash = initial_balance
         total_pnl = 0
         
+        # Tick values for P&L calculation
+        tick_values = {
+            "MNQ": 0.5,    # $0.50 per tick
+            "ES": 12.5,    # $12.50 per tick
+            "NQ": 5.0,     # $5.00 per tick
+            "YM": 5.0,     # $5.00 per tick
+            "RTY": 5.0     # $5.00 per tick
+        }
+        
+        tick_value = tick_values.get(symbol, 0.5)
+        
         # Simple strategy simulation - buy when price goes up, sell when down
-        for i in range(10, len(bars) - 10):
+        entry_lookback = max(10, len(bars) // 50)  # Adaptive lookback based on timeframe
+        
+        for i in range(entry_lookback, len(bars) - entry_lookback):
             bar = bars[i]
-            prev_bars = bars[i-10:i]
+            prev_bars = bars[i-entry_lookback:i]
             
             # Simple momentum strategy
             recent_closes = [b["close"] for b in prev_bars]
@@ -384,34 +423,47 @@ async def run_backtest(request: Dict[str, Any]) -> Dict[str, Any]:
             
             # Entry logic
             if current_position == 0:
-                if current_price > sma * 1.002:  # Buy signal
-                    current_position = 1
-                    entry_price = current_price
+                if current_price > sma * 1.005:  # Buy signal - stronger signal for longer timeframes
+                    current_position = contracts  # Use specified number of contracts
+                    entry_price = current_price + slippage  # Account for slippage
+                    entry_cost = commission * contracts    # Commission per contract
                     
                     trade = {
                         "entry_time": bar["timestamp"],
                         "entry_price": entry_price,
                         "side": "long",
-                        "quantity": 1,
+                        "quantity": contracts,
                         "status": "open"
                     }
                     
-                elif current_price < sma * 0.998:  # Sell signal
-                    current_position = -1
-                    entry_price = current_price
+                elif current_price < sma * 0.995:  # Sell signal
+                    current_position = -contracts  # Use specified number of contracts
+                    entry_price = current_price - slippage  # Account for slippage
+                    entry_cost = commission * contracts     # Commission per contract
                     
                     trade = {
                         "entry_time": bar["timestamp"],
                         "entry_price": entry_price,
                         "side": "short",
-                        "quantity": 1,
+                        "quantity": contracts,
                         "status": "open"
                     }
             
-            # Exit logic
-            elif current_position != 0 and i % 20 == 0:  # Exit every 20 bars
-                exit_price = current_price
-                pnl = (exit_price - entry_price) * current_position
+            # Exit logic - adaptive based on timeframe
+            exit_frequency = {"1m": 5, "5m": 4, "15m": 8, "1h": 12, "4h": 6, "1d": 3}
+            exit_bars = exit_frequency.get(timeframe, 8)
+            
+            if current_position != 0 and i % exit_bars == 0:  # Exit based on timeframe
+                exit_price = current_price + (slippage if current_position < 0 else -slippage)
+                exit_cost = commission * contracts
+                
+                # Calculate P&L using proper tick values
+                if trade["side"] == "long":
+                    price_diff = exit_price - entry_price
+                else:
+                    price_diff = entry_price - exit_price
+                
+                pnl = (price_diff * tick_value * abs(current_position)) - entry_cost - exit_cost
                 total_pnl += pnl
                 
                 trade.update({
@@ -455,6 +507,8 @@ async def run_backtest(request: Dict[str, Any]) -> Dict[str, Any]:
         results = {
             "strategy": strategy_name,
             "symbol": symbol,
+            "timeframe": timeframe,
+            "contracts": contracts,
             "start_date": start_date,
             "end_date": end_date,
             "initial_balance": initial_balance,
@@ -469,6 +523,7 @@ async def run_backtest(request: Dict[str, Any]) -> Dict[str, Any]:
             "avg_loss": round(avg_loss, 2),
             "max_drawdown_pct": round(max_drawdown * 100, 2),
             "sharpe_ratio": round(total_return / (max_drawdown * 100 + 1), 2),
+            "tick_value": tick_value,
             "trades": trades,
             "positions": positions,
             "bars": bars

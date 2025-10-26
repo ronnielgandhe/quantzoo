@@ -71,7 +71,7 @@ def load_symbols():
     return st.session_state.symbols
 
 
-def run_backtest(strategy: str, symbol: str, start_date: str, end_date: str, initial_balance: float, commission: float, slippage: float):
+def run_backtest(strategy: str, symbol: str, start_date: str, end_date: str, initial_balance: float, commission: float, slippage: float, timeframe: str = "5m", contracts: int = 1):
     """Run backtest via API."""
     
     backtest_data = {
@@ -81,7 +81,9 @@ def run_backtest(strategy: str, symbol: str, start_date: str, end_date: str, ini
         "end_date": end_date,
         "initial_balance": initial_balance,
         "commission": commission,
-        "slippage": slippage
+        "slippage": slippage,
+        "timeframe": timeframe,
+        "contracts": contracts
     }
     
     with st.spinner("Running backtest... This may take a moment."):
@@ -241,7 +243,8 @@ def create_performance_metrics(results: Dict) -> Dict:
         "Avg Win": f"${results.get('avg_win', 0):.2f}",
         "Avg Loss": f"${results.get('avg_loss', 0):.2f}",
         "Max Drawdown": f"{results.get('max_drawdown_pct', 0):.2f}%",
-        "Sharpe Ratio": f"{results.get('sharpe_ratio', 0):.2f}"
+        "Sharpe Ratio": f"{results.get('sharpe_ratio', 0):.2f}",
+        "Tick Value": f"${results.get('tick_value', 0):.2f}"
     }
     
     return metrics
@@ -309,6 +312,28 @@ with st.sidebar:
         st.write(f"**Margin:** ${selected_symbol_info['margin']:,}")
         st.write(f"**Session:** {selected_symbol_info['session_hours']}")
     
+    # Timeframe and Contract settings
+    st.subheader("⚙️ Trading Parameters")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        timeframe = st.selectbox(
+            "Timeframe",
+            options=["1m", "5m", "15m", "1h", "4h", "1d"],
+            index=1,  # Default to 5m
+            help="Select the timeframe for bar data",
+            key="timeframe_selector"
+        )
+    with col2:
+        contracts = st.number_input(
+            "Contracts",
+            min_value=1,
+            max_value=100,
+            value=1,
+            help="Number of contracts to trade",
+            key="contracts_input"
+        )
+    
     # Date range selection
     st.subheader("📅 Date Range")
     
@@ -322,7 +347,7 @@ with st.sidebar:
         "Custom": None
     }
     
-    range_selection = st.selectbox("Quick Range", options=list(preset_ranges.keys()))
+    range_selection = st.selectbox("Quick Range", options=list(preset_ranges.keys()), key="range_selector")
     
     if range_selection == "Custom":
         col1, col2 = st.columns(2)
@@ -372,7 +397,9 @@ with st.sidebar:
             end_date=end_date.isoformat(),
             initial_balance=initial_balance,
             commission=commission,
-            slippage=slippage
+            slippage=slippage,
+            timeframe=timeframe,
+            contracts=contracts
         )
         
         if success:
@@ -418,7 +445,11 @@ else:
     # Show results
     results = st.session_state.backtest_results
     
+    timeframe_display = results.get('timeframe', '5m')
+    contracts_display = results.get('contracts', 1)
+    
     st.header(f"📊 Backtest Results: {results['strategy'].upper()} on {results['symbol']}")
+    st.subheader(f"⏱️ {timeframe_display} timeframe • 📋 {contracts_display} contract(s)")
     
     # Performance summary cards
     metrics = create_performance_metrics(results)

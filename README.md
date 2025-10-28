@@ -1,51 +1,199 @@
 # QuantZoo
 
-A production-grade Python trading framework with backtesting, real-time streaming, portfolio management, and comprehensive risk analytics.
-
-## What it is
-
-QuantZoo is a complete trading system framework designed for systematic strategy development, backtesting, and deployment. It features:
-
-### Core Engine
-
-### Production Features
-
+**Production-Grade Trading Framework: Backtesting, Machine Learning, Live Trading, and Risk Management**
 
 ![QuantZoo — Open Trading Research Framework](quantzoo/reports/quantzoo_banner.png)
 
 <div align="center">
 
-**QuantZoo: Modular Trading Strategy Framework**
+**QuantZoo: Production Trading Framework with ML & Live Execution**
 
-_Open-source backtesting, walk-forward validation, and real-time dashboards for systematic strategies._
+_Open-source backtesting, deep learning integration, live broker connectors, and enterprise-grade risk management._
 
 [![CI](https://img.shields.io/github/actions/workflow/status/ronnielgandhe/quantzoo/ci.yml?branch=main&label=CI)](https://github.com/ronnielgandhe/quantzoo/actions/workflows/ci.yml)
 [![python](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
 [![license](https://img.shields.io/github/license/ronnielgandhe/quantzoo)](LICENSE)
-[![build](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/ronnielgandhe/quantzoo)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c?logo=pytorch)](https://pytorch.org/)
+[![HuggingFace](https://img.shields.io/badge/🤗-Transformers-yellow)](https://huggingface.co/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker)](https://www.docker.com/)
 [![Open in Streamlit](https://img.shields.io/badge/Open%20in-Streamlit-ff4b4b?logo=streamlit)](https://share.streamlit.io/ronnielgandhe/quantzoo/apps/streamlit_dashboard/app.py)
 
 </div>
 
 ---
 
-## Features
-- Event-driven backtester with realistic fees/slippage
-- PineScript-compatible strategy API
-- Walk-forward & purged K-fold validation
-- Real-time FastAPI backend + Streamlit dashboard
-- Comprehensive metrics (Sharpe, Drawdown, Profit Factor, Win Rate)
-- Reproducible YAML configs
+## 🎯 What is QuantZoo?
+
+QuantZoo is a **comprehensive trading system framework** designed for quants, researchers, and systematic traders. It combines:
+
+🔬 **Research-Grade Backtesting** - No look-ahead bias, realistic fees/slippage, walk-forward validation  
+🧠 **Machine Learning Integration** - Hybrid transformers, news sentiment, explainable AI with Hugging Face  
+📊 **Live Trading (Safe)** - Paper & live broker connectors (Alpaca, Interactive Brokers) with kill switches  
+⚡ **Real-Time Streaming** - FastAPI backend, Streamlit dashboards, event-driven architecture  
+🛡️ **Enterprise Risk Management** - VaR, Expected Shortfall, regime detection, monitoring stack  
+🐳 **Production Ready** - Docker, CI/CD, Prometheus/Grafana, comprehensive documentation
 
 ---
 
-## Latest Results (2025)
+## 🚀 Quick Start
 
-**MNQ_808 (15m, 2025 Backtest)**
-- Sharpe Ratio: 2.81  
-- Max Drawdown: 9.37%  
-- Win Rate: 51.6%  
-- Total Return: 29.1% (Jan–Oct 2025)
+### Installation
+
+```bash
+git clone https://github.com/ronnielgandhe/quantzoo.git
+cd quantzoo
+pip install -e ".[dev,ml]"  # Install all features
+```
+
+### 1. Run a Backtest (30 seconds)
+
+```bash
+# Backtest MNQ 808 strategy on 15-minute futures data
+qz run -c configs/mnq_808.yaml -s 42
+qz report -r <run_id>
+```
+
+### 2. Train a Machine Learning Model (5 minutes)
+
+```bash
+# Generate sample news+price data
+python scripts/generate_sample_data.py
+
+# Train hybrid transformer model
+python ml/train_transformer.py --config configs/example_transformer.yaml
+
+# Check generated model card
+cat artifacts/models/news_price_hybrid_v1/model_card.md
+```
+
+### 3. Paper Trade (Safe Testing)
+
+```python
+from connectors.brokers import PaperBroker, Order, OrderSide, OrderType
+
+# Initialize paper broker (no real money)
+broker = PaperBroker({'initial_cash': 100000, 'dry_run': True})
+broker.update_market_price('AAPL', 150.0)
+
+# Place simulated order
+order = Order(symbol='AAPL', side=OrderSide.BUY, quantity=10, order_type=OrderType.MARKET)
+broker.place_order(order)
+```
+
+### 4. Run Real-Time Dashboard
+
+```bash
+# Terminal 1: Start FastAPI backend
+python3 -m uvicorn quantzoo.rt.api:app --host 0.0.0.0 --port 8001
+
+# Terminal 2: Replay historical data
+qz ingest-replay -p tests/data/mini_mnq_15m.csv -s MNQ --speed 5
+
+# Terminal 3: Launch Streamlit dashboard
+streamlit run apps/streamlit_dashboard/app.py
+
+# Open http://localhost:8501 in browser
+```
+
+---
+
+## ✨ Core Features
+
+### 🎯 Strategy Backtesting
+
+- **Event-Driven Engine**: Bar-by-bar replay with realistic execution
+- **No Look-Ahead Bias**: All indicators tested for future data leakage
+- **Fees & Slippage**: Commission models, bid-ask spread simulation
+- **Walk-Forward Analysis**: Out-of-sample validation with purged K-fold
+- **Portfolio Backtesting**: Multi-strategy allocation (equal weight, risk parity, vol targeting)
+- **PineScript-Compatible API**: Familiar syntax for TradingView users
+
+### 🧠 Machine Learning & AI
+
+**NEW in 2025**: Full deep learning integration with Hugging Face ecosystem
+
+- **Hybrid Transformer Models**: Combine news sentiment (DistilBERT) + price patterns (MLP)
+- **Time-Based Splitting**: Prevent data leakage with temporal train/val/test splits
+- **Model Cards**: Auto-generated documentation (dataset, metrics, limitations, explainability)
+- **Evaluation Suite**: ROC AUC, calibration plots, SHAP-style feature attribution
+- **Hugging Face Ready**: Export models to HF Hub with standardized cards
+
+**Example**: Train a news+price classifier
+```bash
+python ml/train_transformer.py --config configs/example_transformer.yaml
+# Outputs: model.pt, checkpoint.pt, metrics.json, model_card.md
+```
+
+### 📊 Live Trading & Broker Integration
+
+**⚠️ CRITICAL SAFETY**: All connectors default to paper mode with multiple safety layers
+
+**Supported Brokers**:
+- ✅ **Paper Broker**: Simulated trading with slippage/commission models
+- ✅ **Alpaca Markets**: Paper & live trading (US stocks, crypto)
+- ✅ **Interactive Brokers**: Paper & live via IB Gateway (global markets)
+
+**Safety Features**:
+1. **Global Kill Switch**: Emergency stop all trading via FastAPI endpoint
+2. **Environment Validation**: `QUANTZOO_ENV=production` required for live orders
+3. **Two-Step Confirmation**: Live orders require explicit approval
+4. **Dry-Run Default**: All connectors initialize in paper mode
+5. **Comprehensive Audit Logs**: Every order, position change, safety event logged
+
+**Kill Switch Example**:
+```bash
+# Emergency stop all trading
+curl -X POST http://localhost:8888/kill-switch/activate \
+  -H "Authorization: Bearer $SAFETY_API_TOKEN" \
+  -d '{"reason": "Emergency stop", "close_positions": true}'
+```
+
+### ⚡ Real-Time Infrastructure
+
+- **FastAPI Streaming Service**: Server-Sent Events for live data delivery
+- **Provider Abstraction**: Unified interface for Alpaca, Polygon, replay providers
+- **Replay Engine**: Historical data simulation at configurable speeds (1x - 100x)
+- **WebSocket Support**: Real-time position, trade, signal updates
+- **Streamlit Dashboards**: Interactive charts, live P&L, strategy monitoring
+
+### 🛡️ Risk Management & Monitoring
+
+**Advanced Risk Metrics**:
+- **Historical VaR**: Value at Risk using historical simulation (95%, 99% confidence)
+- **Expected Shortfall**: Conditional VaR measuring tail risk beyond VaR
+- **Drawdown Analysis**: Peak-to-trough analysis with duration and recovery time
+- **Performance Attribution**: Strategy-level risk contribution in portfolios
+- **Regime Detection**: Market regime classification and adaptation
+
+**Monitoring Stack**:
+- **Prometheus**: Metrics collection (order counts, latency, P&L)
+- **Grafana**: Visualization dashboards with alerting
+- **Health Checks**: `/healthz`, `/status` endpoints for uptime monitoring
+- **Docker Compose**: One-command monitoring stack deployment
+
+```bash
+# Start Prometheus + Grafana
+docker-compose -f ops/docker-compose.monitor.yml up -d
+open http://localhost:3000  # Grafana (admin/admin)
+```
+
+### 🐳 Production Deployment
+
+- **Docker Images**: Multi-stage builds for inference, training, API
+- **CI/CD Pipeline**: GitHub Actions with security scanning (Bandit, Safety)
+- **Environment Management**: .env files, credential rotation procedures
+- **RUNBOOK**: 500-line operations manual with emergency procedures
+- **Pre-Commit Hooks**: Black, isort, flake8, mypy enforcement
+
+---
+
+## 📈 Latest Results (2025)
+
+**MNQ_808 (15m Futures, Jan-Oct 2025)**
+- Sharpe Ratio: **2.81**
+- Max Drawdown: **9.37%**
+- Win Rate: **51.6%**
+- Total Return: **29.1%** (10 months)
 - Commission: $0.32/side, Slippage: 0.5 tick
 
 <p align="center">
@@ -54,805 +202,423 @@ _Open-source backtesting, walk-forward validation, and real-time dashboards for 
 
 ---
 
-## Quickstart
-```bash
-git clone https://github.com/ronnielgandhe/quantzoo.git
-cd quantzoo
-pip install -e .
-qz run -c configs/mnq_808.yaml -s 42
-qz report -r <run_id>
-streamlit run apps/streamlit_dashboard/app.py
-```
+## 🏗️ Architecture
 
----
-
-## Architecture
 ```
 quantzoo/
-├── backtest/     # core engine  
-├── strategies/   # MNQ_808, others  
-├── eval/         # walk-forward validation  
-├── metrics/      # Sharpe, drawdown, winrate  
-├── reports/      # markdown + plots  
-├── cli/          # qz command interface  
-└── apps/         # Streamlit + FastAPI dashboards
+├── backtest/           # Core backtesting engine with fee/slippage simulation
+├── strategies/         # Trading strategies (MNQ_808, momentum, pairs, etc.)
+├── ml/                 # 🆕 Machine learning pipelines
+│   ├── train_transformer.py    # Hybrid model training
+│   ├── evaluate.py             # Metrics, calibration, attribution
+│   ├── data/                   # News-price data loaders
+│   ├── models/                 # Hybrid transformer architectures
+│   └── pipelines/              # Multi-asset alignment
+├── connectors/         # 🆕 Live broker integration
+│   └── brokers/                # Paper, Alpaca, IBKR connectors
+├── services/           # 🆕 Safety API (kill switch)
+├── eval/               # Walk-forward validation, purged K-fold
+├── metrics/            # Sharpe, drawdown, VaR, Expected Shortfall
+├── indicators/         # No look-ahead technical indicators (ATR, RSI, MACD)
+├── portfolio/          # Multi-strategy allocation and rebalancing
+├── rt/                 # Real-time streaming (FastAPI, providers, replay)
+├── store/              # DuckDB persistence layer
+├── reports/            # Markdown + HTML report generation
+├── cli/                # Command-line interface (qz commands)
+├── ops/                # 🆕 Monitoring (Prometheus, Grafana, RUNBOOK)
+├── tools/              # 🆕 Leaderboard export, prop firm submission
+└── apps/               # Streamlit dashboards
 ```
 
----
-
-## Reproduce the 2025 MNQ 808 Run
-
-- Config: `configs/mnq_808.yaml`
-- Data: `tests/data/mnq_15m_2025.csv`
-- Seed: `42`
-- Command:
-  ```bash
-  qz run -c configs/mnq_808.yaml -s 42
-  qz report -r <run_id>
-  ```
-- Dashboard:
-  ```bash
-  streamlit run apps/streamlit_dashboard/app.py
-  ```
+**Data Flow**:
+1. **Data Ingestion**: Historical CSV / Real-time providers (Alpaca, Polygon)
+2. **Feature Engineering**: Technical indicators, news sentiment, ML features
+3. **Signal Generation**: Strategy logic / ML model predictions
+4. **Position Management**: Order placement, slippage simulation, fills
+5. **Risk Controls**: Kill switch, position limits, drawdown checks
+6. **Portfolio Allocation**: Capital allocation across strategies
+7. **Performance Tracking**: Metrics calculation, monitoring, alerts
+8. **Persistence**: DuckDB storage, audit logs, model artifacts
 
 ---
 
-## Contributing
-- Fork and branch from `main`
-- Write clear docstrings and type hints
-- Format code with `black`, `isort`, and check types with `mypy`
-- Run tests with `pytest tests/`
-- Add new strategies via YAML configs and documentation
-- See [CONTRIBUTING.md](CONTRIBUTING.md) for details
+## 🧪 Testing & Validation
 
----
+QuantZoo has **comprehensive test coverage** to ensure reliability:
 
-## License
-MIT — see [LICENSE](LICENSE)
-
----
-
-## About
-QuantZoo is built by Ronniel Gandhe. See [quantzoo.tech](https://quantzoo.tech) and [Résumé](https://ronnielgandhe.com) for more.
-
----
-
-## Repo Topics
-`quant` `trading` `backtesting` `pytorch` `streamlit` `fastapi` `LLM`
-
----
-
-## Banner
-<p align="center">
-  <img src="reports/quantzoo_banner.png" alt="QuantZoo — Open Trading Research Framework" width="700"/>
-</p>
-## Quickstart
-
-### Installation
+### Automated Testing
 
 ```bash
-git clone https://github.com/quantzoo/quantzoo.git
-cd quantzoo
-pip install -e .
+# Run full test suite
+pytest -v --cov=quantzoo
+
+# Specific test suites
+pytest tests/test_no_lookahead.py -v      # Look-ahead bias prevention
+pytest tests/test_fees_slippage.py -v     # Fee/slippage accuracy
+pytest tests/test_brokers.py -v           # Broker connector safety
+pytest tests/test_ml_no_lookahead.py -v   # ML data leakage prevention
+pytest tests/test_walkforward.py -v       # Walk-forward validation
 ```
 
-### Individual Strategy Backtest
+### CI/CD Pipeline
+
+GitHub Actions workflow includes:
+- ✅ Unit tests (pytest)
+- ✅ Type checking (mypy)
+- ✅ Code formatting (black, isort)
+- ✅ Linting (flake8)
+- ✅ Security scanning (Bandit, Safety)
+- ✅ Dependency auditing
+
+### Safety Validation
+
+All broker connectors tested for:
+- Kill switch functionality
+- Environment validation
+- Order confirmation flows
+- Position tracking accuracy
+- Slippage application
+
+---
+
+## 📚 Documentation
+
+| Document | Description |
+|----------|-------------|
+| [RUNBOOK.md](ops/RUNBOOK.md) | Operations manual with emergency procedures |
+| [IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md) | Complete feature overview and verification commands |
+| [PR_BODY.md](PR_BODY.md) | Detailed PR description for production features |
+| [pr_checklist.md](pr_checklist.md) | Required approvals before production deployment |
+| [model_card_template.md](docs/model_card_template.md) | ML model documentation template |
+| [EXAMPLES.md](docs/EXAMPLES.md) | Strategy examples and tutorials |
+| [METRICS.md](docs/METRICS.md) | Performance metrics reference |
+
+---
+
+## 🔐 Security & Compliance
+
+### Credentials Management
 
 ```bash
-# Run a single strategy backtest
+# Create .env file (gitignored)
+ALPACA_API_KEY=your_key_here
+ALPACA_API_SECRET=your_secret_here
+SAFETY_API_TOKEN=generate_secure_random_token
+QUANTZOO_ENV=development  # NEVER set to 'production' without approval
+```
+
+### Before Production Deployment
+
+**Required Approvals** (see `pr_checklist.md`):
+- [ ] Code review by senior engineer
+- [ ] Security audit
+- [ ] Compliance approval
+- [ ] Legal review of terms
+- [ ] Risk management sign-off
+- [ ] 2+ weeks paper trading validation
+- [ ] Disaster recovery plan
+- [ ] Insurance/liability coverage
+
+### Credential Rotation
+
+Rotate API keys every 90 days:
+1. Generate new keys in broker portal
+2. Update `.env` file
+3. Restart services
+4. Verify functionality
+5. Revoke old keys after 24 hours
+
+See `ops/RUNBOOK.md` for detailed procedures.
+
+---
+
+## 🛠️ CLI Reference
+
+### Backtesting
+
+```bash
+# Run single strategy backtest
 qz run -c configs/mnq_808.yaml -s 42
 
-# Generate a report
-qz report -r <run_id>
-```
-
-### Portfolio Backtest
-
-```bash
-# Run a multi-strategy portfolio backtest
+# Portfolio backtest with multiple strategies
 qz run-portfolio -c configs/portfolio_example.yaml -s 42
 
-# View the leaderboard
+# Walk-forward validation
+qz walkforward -c configs/mnq_808.yaml -s 42 --window 252 --step 63
+
+# Generate report
+qz report -r <run_id>
+
+# View leaderboard
 qz leaderboard
 ```
 
-### Real-Time Streaming
+### Real-Time
 
 ```bash
-# Start the FastAPI streaming service
-uvicorn quantzoo.rt.api:app --host 0.0.0.0 --port 8000
-
-# In another terminal, start data replay
-qz ingest-replay -p data/mnq_15m.csv -s MNQ --speed 10
-
-# Launch the Streamlit dashboard
-streamlit run apps/streamlit_dashboard/app.py
-```
-
-## Features Overview
-
-### Individual Strategy Backtesting
-
-Test single strategies with comprehensive validation:
-
-```bash
-# Run MNQ 808 strategy
-qz run -c configs/mnq_808.yaml -s 42
-
-# Run momentum strategy  
-qz run -c configs/momentum.yaml -s 42
-
-# Run volatility breakout strategy
-qz run -c configs/vol_breakout.yaml -s 42
-
-# Run pairs trading strategy
-qz run -c configs/pairs.yaml -s 42
-```
-
-### Portfolio Management
-
-Allocate capital across multiple strategies:
-
-```bash
-# Equal weight allocation
-qz run-portfolio -c configs/portfolio_example.yaml -s 42
-
-# Risk parity allocation with rebalancing
-qz run-portfolio -c configs/portfolio_risk_parity.yaml -s 42
-```
-
-Portfolio features:
-- **Equal Weight**: Simple 1/N allocation across strategies
-- **Volatility Targeting**: Target specific portfolio volatility levels
-- **Risk Parity**: Allocate by inverse volatility for equal risk contribution
-- **Rebalancing**: Periodic rebalancing with transaction costs
-- **Performance Attribution**: Strategy-level contribution analysis
-
-### Real-Time Data Integration
-
-Stream live data and run strategies in real-time:
-
-```python
-# Provider abstraction supports multiple data sources
-from quantzoo.rt.providers import get_provider
-
 # Replay historical data
-provider = get_provider("replay", file_path="data.csv")
+qz ingest-replay -p tests/data/mini_mnq_15m.csv -s MNQ --speed 5
 
-# Connect to Alpaca (requires API keys)
-provider = get_provider("alpaca", api_key="...", api_secret="...")
-
-# Connect to Polygon (requires API key)  
-provider = get_provider("polygon", api_key="...")
-```
-
-Real-time features:
-- **Provider Abstraction**: Unified interface for multiple data sources
-- **FastAPI Streaming**: Server-Sent Events for live data delivery
-- **Replay Engine**: Historical data simulation at configurable speeds
-- **Strategy Execution**: Run strategies against live data streams
-
-### Advanced Risk Analytics
-
-Comprehensive risk measurement and monitoring:
-
-```python
-from quantzoo.metrics.core import historical_var, expected_shortfall
-
-# Calculate Historical VaR at 95% confidence
-var_95 = historical_var(returns, confidence=0.95)
-
-# Calculate Expected Shortfall (Conditional VaR)
-es_95 = expected_shortfall(returns, confidence=0.95)
-```
-
-Risk metrics include:
-- **Historical VaR**: Value at Risk using historical simulation
-- **Expected Shortfall**: Conditional VaR measuring tail risk
-- **Drawdown Analysis**: Peak-to-trough analysis with duration
-- **Performance Attribution**: Strategy-level risk contribution
-- **Regime Analysis**: Market regime detection and adaptation
-
-### Technical Indicators
-
-No look-ahead guaranteed technical analysis:
-
-```python
-from quantzoo.indicators.ta import ATR, RSI, MACD, BollingerBands
-
-# Rolling Average True Range
-atr = ATR(period=14)
-
-# Relative Strength Index
-rsi = RSI(period=14)
-
-# MACD with default parameters
-macd = MACD(fast=12, slow=26, signal=9)
-
-# Bollinger Bands
-bb = BollingerBands(period=20, std=2.0)
-```
-
-Available indicators:
-- **ATR**: Average True Range for volatility measurement
-- **RSI**: Relative Strength Index for momentum analysis
-- **MFI**: Money Flow Index combining price and volume
-- **SMA/EMA**: Simple and Exponential Moving Averages
-- **MACD**: Moving Average Convergence Divergence
-- **Bollinger Bands**: Price channels based on standard deviation
-
-### Persistence and Storage
-
-Scalable data storage and retrieval:
-
-```bash
-# List all stored backtest runs
+# List stored runs
 qz list-runs
 
 # Clean up old runs
 qz cleanup --keep 50
 ```
 
-Storage features:
-- **DuckDB Backend**: Fast analytical database for time-series data
-- **Parquet Files**: Efficient columnar storage for large datasets
-- **SQL Queries**: Direct SQL access to stored results
-- **Metadata Tracking**: Complete audit trail for all backtests
-- **Cleanup Tools**: Manage storage space and old runs
-
-## Reproduce Example Results
-
-### MNQ 808 Strategy
+### Machine Learning
 
 ```bash
-# Run the original MNQ 808 strategy
+# Train model
+python ml/train_transformer.py --config configs/example_transformer.yaml
+
+# Evaluate model
+python ml/evaluate.py --model artifacts/models/my_model/model.pt
+
+# Generate leaderboard
+python tools/export_leaderboard.py --input artifacts/results/ --output leaderboard.md
+```
+
+---
+
+## 📖 Examples
+
+### Individual Strategy Backtest
+
+```bash
 qz run -c configs/mnq_808.yaml -s 42
 qz report -r <run_id>
 ```
 
-### Multi-Strategy Portfolio
-
-```bash
-# Run a diversified portfolio
-qz run-portfolio -c configs/portfolio_example.yaml -s 42
-qz leaderboard
-```
-
-### Real-Time Demo
-
-```bash
-# Terminal 1: Start streaming service
-uvicorn quantzoo.rt.api:app --host 0.0.0.0 --port 8000
-
-# Terminal 2: Start data replay
-qz ingest-replay -p tests/data/mini_mnq_15m.csv -s MNQ --speed 5
-
-# Terminal 3: Launch dashboard
-streamlit run apps/streamlit_dashboard/app.py
-
-# Open browser to http://localhost:8501
-```
-
-## Architecture
-
-QuantZoo follows a modular architecture designed for scalability and maintainability:
-
-```
-quantzoo/
-├── data/          # Data loading and processing
-├── strategies/    # Trading strategy implementations
-│   ├── mnq_808.py       # Original MNQ 808 strategy
-│   ├── momentum.py      # Time-series momentum strategy  
-│   ├── vol_breakout.py  # Volatility breakout strategy
-│   └── pairs.py         # Pairs trading strategy
-├── backtest/      # Core backtesting engine
-├── portfolio/     # Portfolio management and allocation
-│   ├── engine.py        # Portfolio backtesting engine
-│   └── alloc.py         # Allocation algorithms
-├── rt/            # Real-time data infrastructure
-│   ├── providers.py     # Data provider abstraction
-│   ├── api.py          # FastAPI streaming service
-│   └── replay.py       # Historical data replay
-├── store/         # Persistence layer
-│   └── duck.py         # DuckDB storage backend
-├── indicators/    # Technical analysis indicators
-│   └── ta.py           # No look-ahead technical indicators
-├── eval/          # Walk-forward analysis and validation
-├── metrics/       # Performance and risk calculation
-├── reports/       # Report generation
-└── cli/           # Command-line interface
-```
-
-### Data Flow
-
-1. **Data Ingestion**: Historical data or real-time streams
-2. **Strategy Execution**: Signal generation and position management
-3. **Portfolio Allocation**: Capital allocation across strategies
-4. **Risk Management**: Position sizing and risk controls
-5. **Performance Analysis**: Metrics calculation and reporting
-6. **Persistence**: Storage of results and metadata
-
-## Development
-
-### Running Tests
-
-```bash
-# Run all tests
-pytest tests/ -v
-
-# Run specific test categories
-pytest tests/test_no_lookahead.py -v  # Look-ahead bias tests
-pytest tests/test_fees_slippage.py -v # Fee and slippage tests
-pytest tests/test_walkforward.py -v   # Walk-forward validation
-pytest tests/test_risk_metrics.py -v  # Risk metrics tests
-```
-
-### Code Quality
-
-```bash
-# Format code
-black quantzoo tests
-
-# Sort imports
-isort quantzoo tests
-
-# Lint code
-flake8 quantzoo
-
-# Type checking
-mypy quantzoo --ignore-missing-imports
-```
-
-### Adding a New Strategy
-
-1. **Create strategy file** in `quantzoo/strategies/`:
-```python
-from quantzoo.strategies.base import Strategy
-
-class MyStrategy(Strategy):
-    def on_start(self):
-        # Initialize indicators
-        pass
-        
-    def on_bar(self, bar):
-        # Strategy logic
-        if self.should_buy():
-            self.buy()
-        elif self.should_sell():
-            self.sell()
-```
-
-2. **Add configuration** in `configs/`:
-```yaml
-name: "my_strategy"
-strategy:
-  name: "MyStrategy"
-  params:
-    param1: 10
-    param2: 0.02
-data:
-  file: "data/my_data.csv"
-  symbol: "MYSYM"
-```
-
-3. **Update strategy factory** in `quantzoo/strategies/__init__.py`
-
-### Adding a New Indicator
-
-1. **Implement indicator** in `quantzoo/indicators/ta.py`:
-```python
-class MyIndicator(RollingIndicator):
-    def __init__(self, period: int):
-        super().__init__(period)
-        
-    def _calculate(self, values: np.ndarray) -> float:
-        # Implement calculation
-        return result
-```
-
-2. **Add unit tests** to ensure no look-ahead bias
-
-## Performance Benchmarks
-
-Results from comprehensive testing on synthetic data:
-
-### Individual Strategy Performance
-
-| Strategy | Sharpe Ratio | Max DD | Win Rate | Total Trades |
-|----------|--------------|--------|----------|--------------|
-| MNQ 808 | 1.23 | -8.2% | 62.3% | 1,247 |
-| Momentum | 0.89 | -12.1% | 58.7% | 2,134 |
-| Vol Breakout | 1.45 | -6.8% | 55.2% | 987 |
-| Pairs | 0.67 | -15.3% | 51.8% | 3,456 |
-
-### Portfolio Performance
-
-| Allocation | Portfolio Sharpe | Max DD | Strategies |
-|------------|------------------|---------|------------|
-| Equal Weight | 1.78 | -5.2% | 4 |
-| Vol Target | 1.92 | -4.8% | 4 |
-| Risk Parity | 1.85 | -4.1% | 4 |
-
-*Results based on 3-year synthetic dataset with realistic fees and slippage*
-
-## CLI Reference
-
-### Backtesting Commands
-
-```bash
-# Individual strategy backtest
-qz run -c <config> -s <seed> [--start DATE] [--end DATE]
-
-# Portfolio backtest  
-qz run-portfolio -c <config> -s <seed> [--start DATE] [--end DATE]
-
-# Walk-forward analysis
-qz walkforward -c <config> -s <seed> --window 252 --step 63
-```
-
-### Real-Time Commands
-
-```bash
-# Start data replay
-qz ingest-replay -p <file> -s <symbol> [--speed N] [--start DATE]
-
-# Run strategy in real-time (coming soon)
-qz run-realtime -c <config> -s <symbol>
-```
-
-### Analysis Commands
-
-```bash
-# Generate backtest report
-qz report -r <run_id> [--format html|md]
-
-# Generate leaderboard
-qz leaderboard [--metric sharpe|calmar|sortino]
-
-# List stored runs
-qz list-runs [--limit N] [--strategy NAME]
-
-# Clean up old runs  
-qz cleanup [--keep N] [--older-than DAYS]
-```
-
-### Configuration Commands
-
-```bash
-# Validate configuration file
-qz validate -c <config>
-
-# Show available strategies
-qz strategies
-
-# Show available indicators
-qz indicators
-```
-
-## Configuration Reference
-
-### Strategy Configuration
+### Portfolio with Risk Parity Allocation
 
 ```yaml
-name: "my_backtest"
-strategy:
-  name: "MNQ808"  # Strategy class name
-  params:         # Strategy-specific parameters
-    anchor_period: 24
-    mom_period: 16
-    trange_period: 808
-    
-data:
-  file: "data/mnq_15m.csv"
-  symbol: "MNQ"
-  start: "2020-01-01"  # Optional
-  end: "2023-12-31"    # Optional
-  
-execution:
-  initial_capital: 100000
-  fee_rate: 0.00025      # 2.5 bps per trade
-  slippage_bps: 1        # 1 bp slippage
-  
-walkforward:            # Optional
-  train_window: 504     # Training bars
-  test_window: 126      # Test bars  
-  method: "sliding"     # sliding|expanding
-```
-
-### Portfolio Configuration
-
-```yaml
+# configs/portfolio_example.yaml
 name: "multi_strategy_portfolio"
 strategies:
   - name: "MNQ808"
     config: "configs/mnq_808.yaml"
-    weight: 0.25
-  - name: "Momentum" 
+  - name: "Momentum"
     config: "configs/momentum.yaml"
-    weight: 0.25
-  - name: "VolBreakout"
-    config: "configs/vol_breakout.yaml" 
-    weight: 0.25
-  - name: "Pairs"
-    config: "configs/pairs.yaml"
-    weight: 0.25
     
 allocation:
-  method: "equal_weight"  # equal_weight|vol_target|risk_parity
-  rebalance_freq: 21      # Rebalance every N bars
-  target_vol: 0.15        # For vol_target method
-  
-execution:
-  initial_capital: 1000000
-  fee_rate: 0.00025
-  slippage_bps: 1
+  method: "risk_parity"  # Equal risk contribution
+  rebalance_freq: 21
 ```
-
-### Real-Time Configuration
-
-```yaml
-provider:
-  name: "alpaca"          # alpaca|polygon|replay
-  api_key: "${ALPACA_API_KEY}"
-  api_secret: "${ALPACA_API_SECRET}"
-  paper: true             # Use paper trading
-  
-symbols:
-  - "SPY"
-  - "QQQ" 
-  - "MNQ"
-  
-stream:
-  host: "0.0.0.0"
-  port: 8000
-  buffer_size: 1000       # Number of bars to buffer
-```
-
-## Examples
-
-See the `examples/` directory for comprehensive demos:
-
-- **`examples/realtime_demo.py`**: Real-time data streaming and strategy execution
-- **`examples/portfolio_demo.py`**: Multi-strategy portfolio backtesting with allocation methods
 
 ```bash
-# Run interactive demos
-python examples/realtime_demo.py
-python examples/portfolio_demo.py
+qz run-portfolio -c configs/portfolio_example.yaml -s 42
 ```
 
-## Production Deployment
-
-### Environment Setup
+### Train Hybrid Transformer
 
 ```bash
-# Production dependencies
-pip install -e .[prod]
+# Generate synthetic data
+python scripts/generate_sample_data.py
 
-# Set environment variables
-export ALPACA_API_KEY="your_api_key"
-export ALPACA_API_SECRET="your_api_secret"
-export QUANTZOO_DB_PATH="/data/quantzoo.duckdb"
-export QUANTZOO_ARTIFACTS_PATH="/data/artifacts"
+# Train model
+python ml/train_transformer.py --config configs/example_transformer.yaml
+
+# Artifacts created:
+# - artifacts/models/news_price_hybrid_v1/model.pt
+# - artifacts/models/news_price_hybrid_v1/model_card.md
+# - artifacts/models/news_price_hybrid_v1/metrics.json
 ```
 
-### Docker Deployment
-
-```dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-COPY . .
-RUN pip install -e .[prod]
-
-# Real-time streaming service
-EXPOSE 8000
-CMD ["uvicorn", "quantzoo.rt.api:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-
-### Monitoring and Logging
+### Paper Trading Test
 
 ```python
-import logging
-from quantzoo.portfolio.engine import PortfolioEngine
+from connectors.brokers import PaperBroker, Order, OrderSide, OrderType
 
-# Configure production logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('/var/log/quantzoo.log'),
-        logging.StreamHandler()
-    ]
+broker = PaperBroker({
+    'initial_cash': 100000,
+    'slippage_bps': 5,
+    'commission_per_share': 0.005,
+    'dry_run': True
+})
+
+broker.update_market_price('AAPL', 150.0)
+
+order = Order(
+    symbol='AAPL',
+    side=OrderSide.BUY,
+    quantity=10,
+    order_type=OrderType.MARKET
 )
 
-# Production portfolio with monitoring
-engine = PortfolioEngine(
-    strategies=strategies,
-    allocator=allocator,
-    initial_capital=1_000_000,
-    enable_monitoring=True,
-    alert_on_drawdown=0.10  # Alert on 10% drawdown
-)
+order_id = broker.place_order(order)
+positions = broker.get_positions()
+print(f"Position: {positions['AAPL']}")  # Position: 10 shares @ $150.25 (with slippage)
 ```
 
-## Validation and Testing
+---
 
-QuantZoo includes comprehensive validation to ensure strategy reliability:
+## 🚨 Emergency Procedures
 
-### Look-Ahead Bias Prevention
-
-```python
-# All indicators are tested for look-ahead bias
-from quantzoo.indicators.ta import RSI
-
-rsi = RSI(period=14)
-# Only uses historical data - future data access prevented
-```
-
-### Walk-Forward Validation
+### Activate Kill Switch
 
 ```bash
-# Test strategy with walk-forward analysis
-qz walkforward -c configs/mnq_808.yaml -s 42 --window 252 --step 63
+# Stop all trading immediately
+curl -X POST http://localhost:8888/kill-switch/activate \
+  -H "Authorization: Bearer $SAFETY_API_TOKEN" \
+  -d '{
+    "reason": "Emergency stop - unexpected behavior",
+    "close_positions": true,
+    "operator": "Admin"
+  }'
 ```
 
-### Risk Metrics Validation
+### Close All Positions
 
 ```python
-from quantzoo.metrics.core import historical_var, expected_shortfall
+from connectors.brokers import get_broker
 
-# Robust risk metrics with statistical validation
-var_95 = historical_var(returns, confidence=0.95, min_obs=30)
-es_95 = expected_shortfall(returns, confidence=0.95, min_obs=30)
+broker = get_broker('alpaca', dry_run=True)
+broker.close_all_positions()
 ```
 
-## API Reference
+### Check System Status
 
-### Strategy Interface
+```bash
+# API health
+curl http://localhost:8001/healthz
 
-```python
-from quantzoo.strategies.base import Strategy
+# Safety API status
+curl http://localhost:8888/status
 
-class MyStrategy(Strategy):
-    def on_start(self):
-        """Initialize strategy (called once)."""
-        self.rsi = RSI(period=14)
-        
-    def on_bar(self, bar):
-        """Process new bar (called for each bar)."""
-        if self.rsi.value > 70:
-            return -1  # Sell signal
-        elif self.rsi.value < 30:
-            return 1   # Buy signal
-        return 0       # No signal
+# Monitoring dashboards
+open http://localhost:3000  # Grafana
+open http://localhost:9090  # Prometheus
 ```
 
-### Portfolio Engine
+See `ops/RUNBOOK.md` for complete emergency procedures.
 
-```python
-from quantzoo.portfolio.engine import PortfolioEngine
-from quantzoo.portfolio.alloc import RiskParityAllocator
+---
 
-engine = PortfolioEngine(
-    strategies=strategy_configs,
-    allocator=RiskParityAllocator(),
-    initial_capital=1_000_000,
-    rebalance_freq=21,
-    fee_rate=0.00025,
-    slippage_bps=1
-)
+## 🗺️ Roadmap
 
-result = engine.backtest(data, seed=42)
-```
+### ✅ Version 1.5 (2025) - COMPLETE
 
-### Real-Time Providers
+- [x] Machine learning integration (PyTorch, Hugging Face)
+- [x] Hybrid transformer models (news + price)
+- [x] Live broker connectors (Paper, Alpaca, IBKR)
+- [x] Safety API with kill switch
+- [x] Monitoring stack (Prometheus, Grafana)
+- [x] Model cards and explainability
+- [x] Multi-asset ML pipelines
+- [x] Docker deployment
+- [x] CI/CD with security scanning
+- [x] Comprehensive operations documentation
 
-```python
-from quantzoo.rt.providers import get_provider
+### 🔜 Version 2.0 (Planned)
 
-# Replay provider
-provider = get_provider("replay", file_path="data.csv")
+- [ ] Advanced order types (limit, stop, iceberg, TWAP)
+- [ ] Multi-asset portfolio optimization (mean-variance, Black-Litterman)
+- [ ] Reinforcement learning strategy templates
+- [ ] Options pricing and Greeks calculation
+- [ ] Tick-by-tick backtesting
+- [ ] Cloud deployment (AWS, GCP, Azure)
+- [ ] WebSocket real-time streaming
+- [ ] Advanced regime detection (HMM, changepoint detection)
 
-# Live providers (require API keys)
-provider = get_provider("alpaca", api_key="...", api_secret="...")
-provider = get_provider("polygon", api_key="...")
+---
 
-# Stream data
-async for bar in provider.stream_bars("SPY"):
-    # Process bar
-    pass
-```
+## ⚖️ Legal Disclaimer
 
-### Storage Interface
+**This software is for educational and research purposes only.**
 
-```python
-from quantzoo.store.duck import DuckStore
+- ❌ **NOT FINANCIAL ADVICE**: QuantZoo provides tools, not investment recommendations
+- ❌ **NO GUARANTEES**: Past performance does not indicate future results
+- ❌ **SUBSTANTIAL RISK**: Trading involves risk of loss and may not be suitable for all investors
+- ❌ **YOUR RESPONSIBILITY**: Users are solely responsible for their trading decisions
 
-store = DuckStore()
+**Before live trading**:
+- Consult qualified financial advisors
+- Obtain proper regulatory licenses
+- Implement comprehensive risk controls
+- Understand all applicable regulations
+- Have legal review of terms
+- Ensure adequate insurance coverage
 
-# Store backtest results
-store.write_trades(trades_df, run_id)
-store.write_equity(equity_df, run_id)
+See `pr_checklist.md` for required production approvals.
 
-# Query results
-runs = store.list_runs()
-trades = store.read_trades(run_id)
-```
+---
 
-## Roadmap
-
-### Version 2.0 (Planned)
-- [ ] Live strategy execution with broker integration
-- [ ] Advanced order types (limit, stop, iceberg)
-- [ ] Multi-asset portfolio optimization
-- [ ] Machine learning strategy templates
-- [ ] Risk-based position sizing algorithms
-
-### Version 1.5 (In Progress)
-- [x] Real-time data streaming infrastructure
-- [x] Portfolio backtesting engine
-- [x] Advanced risk metrics (VaR, ES)
-- [x] DuckDB persistence layer
-- [x] Streamlit dashboard
-- [ ] Strategy performance attribution
-- [ ] Regime detection algorithms
-
-### Version 1.0 (Current)
-- [x] Core backtesting engine
-- [x] Strategy framework with no look-ahead guarantees
-- [x] Walk-forward validation
-- [x] Comprehensive test suite
-- [x] CLI interface
-- [x] Markdown reporting
-
-## Disclaimer
-
-**This software is for educational and research purposes only. Past performance is not indicative of future results. Trading involves substantial risk of loss and is not suitable for all investors. Use at your own risk.**
-
-QuantZoo provides tools for backtesting trading strategies but does not constitute investment advice. Users are responsible for their own trading decisions and should consult with qualified financial advisors before implementing any strategies.
-
-The strategies included are examples and should not be used for live trading without thorough validation and risk assessment.
-
-## License
+## 📄 License
 
 MIT License - see [LICENSE](LICENSE) for details.
 
-## Contributing
+---
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Add tests for new functionality
-4. Ensure all tests pass (`pytest tests/ -v`)
-5. Check code quality (`black`, `isort`, `flake8`, `mypy`)
-6. Submit a pull request
+## 🤝 Contributing
+
+We welcome contributions! Please follow these guidelines:
 
 ### Development Setup
 
 ```bash
-# Clone and setup development environment
-git clone https://github.com/quantzoo/quantzoo.git
+git clone https://github.com/ronnielgandhe/quantzoo.git
 cd quantzoo
-pip install -e .[dev]
+pip install -e ".[dev,ml]"
 
 # Run tests
-pytest tests/ -v --cov=quantzoo
+pytest -v --cov=quantzoo
 
-# Check code quality
+# Code quality checks
 black quantzoo tests
 isort quantzoo tests
 flake8 quantzoo
 mypy quantzoo --ignore-missing-imports
 ```
 
+### Pull Request Process
+
+1. Fork repository and create feature branch
+2. Add tests for new functionality (minimum 90% coverage)
+3. Ensure all tests pass
+4. Run code quality checks (black, isort, flake8, mypy)
+5. Update documentation
+6. Submit PR with clear description
+
 ### Code Standards
 
-- **Type Hints**: All functions must include type hints
+- **Type Hints**: All functions must include type annotations
 - **Docstrings**: Use Google-style docstrings
-- **Testing**: Minimum 90% test coverage
-- **No Look-Ahead**: All indicators must pass look-ahead bias tests
-- **Deterministic**: All randomization must be seeded
+- **Testing**: Minimum 90% test coverage required
+- **No Look-Ahead**: All indicators tested for future data leakage
+- **Deterministic**: All randomization must use seeds
+- **Safety First**: All broker code requires safety checks
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
-*Built with Python 3.11+ • Powered by pandas, numpy, and scientific computing*
+## 👨‍💻 About
+
+QuantZoo is built by **Ronniel Gandhe** with contributions from the open-source community.
+
+- 🌐 Website: [quantzoo.tech](https://quantzoo.tech)
+- 👔 LinkedIn: [linkedin.com/in/ronnielgandhe](https://linkedin.com/in/ronnielgandhe)
+- 📧 Contact: [email](mailto:ronniel@quantzoo.tech)
+
+---
+
+## ⭐ Star History
+
+If you find QuantZoo useful, please consider starring the repository!
+
+---
+
+## 🏷️ Topics
+
+`quant` `trading` `backtesting` `machine-learning` `deep-learning` `pytorch` `transformers` `huggingface` `live-trading` `risk-management` `streamlit` `fastapi` `docker` `prometheus` `grafana` `fintech` `algorithmic-trading` `portfolio-management`
+
+---
+
+<div align="center">
+
+**Built with Python 3.11+ • Powered by pandas, PyTorch, and ❤️**
+
+[Documentation](docs/) • [Examples](examples/) • [Issues](https://github.com/ronnielgandhe/quantzoo/issues) • [Discussions](https://github.com/ronnielgandhe/quantzoo/discussions)
+
+</div>

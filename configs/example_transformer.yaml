@@ -1,0 +1,66 @@
+# Example Transformer Training Configuration
+
+experiment_name: "news_price_hybrid_v1"
+
+# Data
+data_path: "data/examples/news_price_sample.parquet"
+dataset: "Synthetic news-price aligned dataset"
+training_data_provenance: "Synthetically generated for testing purposes. DO NOT USE FOR PRODUCTION."
+
+# Model
+transformer_model: "distilbert-base-uncased"
+freeze_transformer: true
+price_hidden_dim: 64
+num_classes: 2
+
+# Training
+num_epochs: 3
+batch_size: 16
+learning_rate: 2.0e-5
+warmup_ratio: 0.1
+max_grad_norm: 1.0
+seed: 42
+
+# Data split
+train_ratio: 0.7
+val_ratio: 0.15
+
+# Text processing
+max_length: 512
+
+# Price features
+price_window_bars: 20
+prediction_horizon_bars: 5
+
+# Regularization
+dropout: 0.1
+
+# Model card metadata
+preprocessing_steps: |
+  1. News text tokenized with DistilBERT tokenizer
+  2. Price windows normalized by first close price
+  3. Time-based train/val/test split to prevent look-ahead bias
+  4. Samples filtered to include only significant price moves (>0.1%)
+
+intended_use: |
+  This model is intended for RESEARCH AND DEVELOPMENT ONLY.
+  
+  DO NOT use for production trading without:
+  - Extensive backtesting on real historical data
+  - Forward testing in paper trading environment
+  - Compliance review and risk management approval
+  - Regular monitoring and retraining
+  
+  The model is designed to predict short-term price direction based on
+  news sentiment and price patterns. Performance on synthetic data may
+  not generalize to real markets.
+
+caveats: |
+  - Trained on synthetic data only
+  - Has not been validated on real market data
+  - May be sensitive to distribution shift
+  - News sentiment is simplified and may not capture nuance
+  - Does not account for market microstructure, liquidity, or execution costs
+  - Predictions are probabilistic and should be combined with risk management
+
+license: "MIT"

@@ -1,0 +1,16 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'quantzoo_api'
+    static_configs:
+      - targets: ['host.docker.internal:8001']
+        labels:
+          service: 'quantzoo_api'
+  
+  - job_name: 'safety_api'
+    static_configs:
+      - targets: ['host.docker.internal:8888']
+        labels:
+          service: 'safety_api'

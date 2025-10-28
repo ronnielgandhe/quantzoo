@@ -1,8 +1,8 @@
-name: CI
+name: CI/CD
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, feature/* ]
   pull_request:
     branches: [ main ]
 
@@ -11,202 +11,74 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.11]
+        python-version: ['3.11']
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v3
     
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     
-    - name: Cache pip packages
+    - name: Cache dependencies
       uses: actions/cache@v3
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
     
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e .[dev]
+        pip install -e ".[dev]"
     
-    - name: Lint with flake8
-      run: |
-        # Stop the build if there are Python syntax errors or undefined names
-        flake8 quantzoo --count --select=E9,F63,F7,F82 --show-source --statistics
-        # Exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 quantzoo --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    
-    - name: Check code formatting with black
-      run: |
-        black --check quantzoo tests
-    
-    - name: Check import sorting with isort
-      run: |
-        isort --check-only quantzoo tests
-    
-    - name: Type checking with mypy
+    - name: Run type checking
       run: |
         mypy quantzoo --ignore-missing-imports
     
-    - name: Test with pytest
+    - name: Run linting
       run: |
-        pytest tests/ -v --cov=quantzoo --cov-report=xml --cov-report=term-missing
+        black --check quantzoo tests
+        isort --check quantzoo tests
+        flake8 quantzoo tests --max-line-length=120
     
-    - name: Upload coverage to Codecov
+    - name: Run security scan
+      run: |
+        bandit -r quantzoo -ll
+        safety check
+    
+    - name: Run unit tests
+      run: |
+        pytest tests/ -v --cov=quantzoo --cov-report=xml
+    
+    - name: Run integration tests
+      run: |
+        pytest tests/integration/ -v
+    
+    - name: Regression test
+      run: |
+        python -m quantzoo.cli backtest --config tests/fixtures/regression_config.yaml
+        python tests/validate_regression.py
+    
+    - name: Upload coverage
       uses: codecov/codecov-action@v3
       with:
         file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
     
-    - name: Smoke test - Individual strategy backtest
-      run: |
-        qz run -c configs/mnq_808.yaml -s 1
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
     
-    - name: Smoke test - Momentum strategy
-      run: |
-        qz run -c configs/momentum.yaml -s 1
-    
-    - name: Smoke test - Volatility breakout strategy
-      run: |
-        qz run -c configs/vol_breakout.yaml -s 1
-    
-    - name: Smoke test - Portfolio backtest
-      run: |
-        qz run-portfolio -c configs/portfolio_example.yaml -s 1
-    
-    - name: Verify artifacts were created
-      run: |
-        ls -la artifacts/
-        test -f artifacts/quantzoo.duckdb
-    
-    - name: Test CLI commands
-      run: |
-        # List stored runs
-        qz list-runs
-        
-        # Get first run ID from storage
-        RUN_ID=$(python -c "
-        from quantzoo.store.duck import DuckStore; 
-        store = DuckStore(); 
-        runs = store.list_runs(); 
-        print(runs[0]['run_id'] if runs else 'none')
-        ")
-        
-        if [ "$RUN_ID" != "none" ]; then
-          echo "Testing report generation for run: $RUN_ID"
-          qz report -r $RUN_ID
-          
-          # Verify report was created
-          ls -la reports/
-          test -f reports/backtest_report_*.md
-        else
-          echo "No runs found in storage"
-          exit 1
-        fi
-    
-    - name: Test leaderboard generation
-      run: |
-        qz leaderboard
-        test -f reports/leaderboard.md
-    
-    - name: Test real-time components
-      run: |
-        # Test that FastAPI service can start (run in background for 5 seconds)
-        timeout 5s uvicorn quantzoo.rt.api:app --host 0.0.0.0 --port 8000 || true
-        
-        # Test replay engine (should exit quickly with test data)
-        timeout 10s qz ingest-replay -p tests/data/mini_mnq_15m.csv -s MNQ --speed 100 || true
-    
-    - name: Test Streamlit dashboard (smoke test)
-      run: |
-        # Test that Streamlit app can import without errors
-        python -c "
-        import sys
-        sys.path.append('apps/streamlit_dashboard')
-        try:
-            import app
-            print('✅ Streamlit dashboard imports successfully')
-        except ImportError as e:
-            print(f'❌ Streamlit dashboard import failed: {e}')
-            sys.exit(1)
-        "
-    
-    - name: Test persistence layer
-      run: |
-        # Test DuckDB functionality
-        python -c "
-        from quantzoo.store.duck import DuckStore
-        import pandas as pd
-        import tempfile
-        import os
-        
-        # Test in temporary directory
-        with tempfile.TemporaryDirectory() as tmpdir:
-            store = DuckStore(os.path.join(tmpdir, 'test.duckdb'), tmpdir)
-            
-            # Test basic operations
-            runs = store.list_runs()
-            print(f'Initial runs: {len(runs)}')
-            
-            # Test writing dummy data
-            df = pd.DataFrame({'test': [1, 2, 3]})
-            store.write_trades(df, 'test_run')
-            
-            # Test reading back
-            read_df = store.read_trades('test_run')
-            assert len(read_df) == 3
-            
-            print('✅ DuckDB store test passed')
-        "
-    
-    - name: Validate configuration files
-      run: |
-        # Test that all config files are valid YAML and can be loaded
-        python -c "
-        import yaml
-        import os
-        
-        config_files = [
-            'configs/mnq_808.yaml',
-            'configs/momentum.yaml', 
-            'configs/vol_breakout.yaml',
-            'configs/pairs.yaml',
-            'configs/portfolio_example.yaml'
-        ]
-        
-        for config_file in config_files:
-            if os.path.exists(config_file):
-                with open(config_file) as f:
-                    cfg = yaml.safe_load(f)
-                    print(f'✅ {config_file} is valid YAML')
-            else:
-                print(f'⚠️ {config_file} not found')
-        "
-    
-    - name: Final system validation
-      run: |
-        # Run comprehensive validation
-        python -c "
-        import quantzoo
-        from quantzoo.strategies import mnq_808, momentum, vol_breakout, pairs
-        from quantzoo.indicators import ta
-        from quantzoo.portfolio import engine as portfolio_engine
-        from quantzoo.rt import providers, api, replay
-        from quantzoo.store import duck
-        
-        print('✅ All modules imported successfully')
-        print(f'QuantZoo version: {getattr(quantzoo, \"__version__\", \"0.1.0\")}')
-        "
-    
-    - name: Clean up test artifacts
-      run: |
-        # Clean up generated files (but keep for debugging if needed)
-        echo "Test artifacts generated:"
-        find . -name "*.duckdb" -o -name "*.parquet" | head -10
+    - name: Upload Trivy results
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
